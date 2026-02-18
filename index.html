@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathe-Trainer: Zehnerübergang</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            background-color: #f0f4f8; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 450px; 
+            text-align: center; 
+        }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .counter-container {
+            background-color: #e8f4fd;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        .counter { font-weight: bold; color: #2ecc71; font-size: 1.3rem; }
+        .task-line { 
+            font-size: 2rem; 
+            font-weight: bold; 
+            margin-bottom: 25px; 
+            color: #34495e; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .step-row { 
+            margin: 15px 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+        input { 
+            width: 60px; 
+            padding: 10px; 
+            font-size: 1.2rem; 
+            text-align: center; 
+            border: 2px solid #dcdde1; 
+            border-radius: 10px; 
+            outline: none; 
+            transition: all 0.2s;
+        }
+        input:focus { border-color: #3498db; box-shadow: 0 0 5px rgba(52, 152, 219, 0.3); }
+        input.correct { border-color: #2ecc71; background-color: #f1fdf5; color: #27ae60; }
+        input.wrong { border-color: #e74c3c; background-color: #fff5f5; }
+        
+        .controls { margin-top: 30px; }
+        button { 
+            background-color: #3498db; 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            border-radius: 12px; 
+            font-size: 1.1rem; 
+            font-weight: bold;
+            cursor: pointer; 
+            transition: transform 0.1s, background 0.2s; 
+            width: 100%;
+        }
+        button:hover { background-color: #2980b9; }
+        button:active { transform: scale(0.98); }
+        
+        .reset-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .reset-link:hover { color: #7f8c8d; }
+        .message { margin-top: 20px; font-weight: bold; min-height: 24px; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Mathe-Heldin 🌟</h1>
+    
+    <div class="counter-container">
+        <span>Gelöste Aufgaben:</span>
+        <span class="counter" id="count">0</span>
+    </div>
+    
+    <div id="game-area">
+        <div class="task-line">
+            <span id="num1">?</span> + <span id="num2">?</span> = 
+            <input type="number" id="res_final" placeholder="?">
+        </div>
+
+        <div style="background: #fdfdfd; padding: 15px; border-radius: 15px; border: 1px dashed #ddd;">
+            <div class="step-row">
+                <input type="number" id="s1_n1"> + 
+                <input type="number" id="s1_plus"> = 
+                <input type="number" id="s1_res">
+            </div>
+            <div class="step-row">
+                <input type="number" id="s2_n1"> + 
+                <input type="number" id="s2_plus"> = 
+                <input type="number" id="s2_res">
+            </div>
+        </div>
+
+        <div class="message" id="msg"></div>
+        
+        <div class="controls">
+            <button onclick="checkTask()" id="btn-action">Prüfen</button>
+        </div>
+
+        <span class="reset-link" onclick="resetCounter()">Zähler zurücksetzen</span>
+    </div>
+</div>
+
+<script>
+    let currentTask = {};
+    // Lädt den Zählerstand aus dem Speicher oder setzt ihn auf 0
+    let solvedCount = parseInt(localStorage.getItem('matheZaehler_v1')) || 0;
+
+    function generateTask() {
+        document.getElementById('count').innerText = solvedCount;
+
+        // Zahl zwischen 11 und 89
+        let n1 = Math.floor(Math.random() * 79) + 11; 
+        
+        // Berechne den nächsten Zehner
+        let nextTen = (Math.floor(n1 / 10) + 1) * 10;
+        let diffToTen = nextTen - n1;
+        
+        // n2 so wählen, dass ein Übergang stattfindet (mindestens diffToTen + 1)
+        let n2 = diffToTen + Math.floor(Math.random() * 8) + 1; 
+
+        currentTask = {
+            n1: n1,
+            n2: n2,
+            nextTen: nextTen,
+            diffToTen: diffToTen,
+            rest: n2 - diffToTen,
+            final: n1 + n2
+        };
+
+        document.getElementById('num1').innerText = n1;
+        document.getElementById('num2').innerText = n2;
+        resetInputs();
+    }
+
+    function resetInputs() {
+        const ids = ['res_final', 's1_n1', 's1_plus', 's1_res', 's2_n1', 's2_plus', 's2_res'];
+        ids.forEach(id => {
+            let el = document.getElementById(id);
+            el.value = '';
+            el.className = '';
+        });
+        document.getElementById('msg').innerText = '';
+        document.getElementById('btn-action').innerText = 'Prüfen';
+        document.getElementById('btn-action').onclick = checkTask;
+    }
+
+    function checkTask() {
+        const val = (id) => parseInt(document.getElementById(id).value);
+        
+        // Logik-Prüfung
+        const isStep1Correct = (val('s1_n1') === currentTask.n1 && val('s1_plus') === currentTask.diffToTen && val('s1_res') === currentTask.nextTen);
+        const isStep2Correct = (val('s2_n1') === currentTask.nextTen && val('s2_plus') === currentTask.rest && val('s2_res') === currentTask.final);
+        const isFinalCorrect = (val('res_final') === currentTask.final);
+
+        if (isStep1Correct && isStep2Correct && isFinalCorrect) {
+            document.getElementById('msg').style.color = '#2ecc71';
+            document.getElementById('msg').innerText = 'Hervorragend! Weiter so! 🏆';
+            
+            solvedCount++;
+            localStorage.setItem('matheZaehler_v1', solvedCount);
+            document.getElementById('count').innerText = solvedCount;
+            
+            document.getElementById('btn-action').innerText = 'Nächste Aufgabe';
+            document.getElementById('btn-action').onclick = generateTask;
+            
+            document.querySelectorAll('input').forEach(i => i.className = 'correct');
+        } else {
+            document.getElementById('msg').style.color = '#e74c3c';
+            document.getElementById('msg').innerText = 'Da hat sich ein kleiner Fehler eingeschlichen...';
+            
+            // Markiere falsche Felder (optional)
+            if (val('res_final') !== currentTask.final) document.getElementById('res_final').classList.add('wrong');
+        }
+    }
+
+    function resetCounter() {
+        if(confirm("Möchtest du den Zähler wirklich auf Null setzen?")) {
+            solvedCount = 0;
+            localStorage.setItem('matheZaehler_v1', 0);
+            document.getElementById('count').innerText = 0;
+        }
+    }
+
+    // Erster Start
+    generateTask();
+</script>
+
+</body>
+</html>
