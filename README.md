@@ -37,6 +37,8 @@ Stations-IDs müssen über alle Themen eindeutig sein (Präfix mit dem Themen-K�
 - `js/topics/mathe-klasse2.js` – Thema „Mathe Klasse 2“ (Fach `mathe`)
 - `js/topics/hsu-wald.js` – Thema „Der Wald“ (Fach `hsu`): Stockwerke, Teile des Baumes, Nadelbäume, Waldregeln, Rechtschreibung
 - `js/visuals-hsu.js` – Wald-Grafiken (Stockwerke, Baumteile)
+- `js/visuals-journey.js` – Weg-Karte und Merk-Bilder für die „Reise im Kopf“
+- `js/topics/hsu-wald-reise.js` – Geschichten, Lernkarten und Quiz der Waldreisen (Gedächtnis-Pfad)
 - `zehnerraum.html` – der frühere einfache Zehnerraum-Trainer
 - `js/topics/_vorlage.js` – Vorlage für neue Themen (nicht eingebunden)
 - `js/main.js` – Startet die App
@@ -50,3 +52,10 @@ Stations-IDs müssen über alle Themen eindeutig sein (Präfix mit dem Themen-K�
 - `word` – Wort über Buchstaben-Tastatur (mit ⇧ für Großbuchstaben, auch echte Tastatur); `flash:true` zeigt das Wort kurz und blendet es dann aus
 - `tiles` – Buchstaben-Puzzle (`tiles:[…]`)
 - Optional: `vis` (HTML oder Funktion `solved=>HTML`), `say` (Vorlesetext), `again()` (gleiche Aufgabe später nochmal), `stepsFor(tag)` (Hilfe-Schritte passend zum Fehler), `onMiss`/`onWin`
+
+## Reise im Kopf (Gedächtnis-Pfad)
+Zu jedem Wissensthema gibt es einen Weg mit Stationen. Jede Station hat ein Merk-Bild, eine kurze Geschichte und eine Szene. Am Ende verbindet eine verrückte Geschichte alle Bilder.
+Neue Reise: in `js/topics/hsu-wald-reise.js` ein Objekt wie `J_NADEL` anlegen (Stationen mit `name`, `short`, `anchor`, `img`, `hook`, `story`, `facts`, `qa`), Szenen in `js/visuals-journey.js` zeichnen und in `globalThis.WALDREISE_STATIONS` eintragen.
+
+## Keine doppelten Fragen
+Jede Aufgabe hat einen Schlüssel (`key`, sonst `prompt`/`story`). In einer Runde kommt jeder Schlüssel nur einmal vor.

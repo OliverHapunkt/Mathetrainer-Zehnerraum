@@ -12,7 +12,7 @@ const S=load();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function bump(tag){S.err[tag]=(S.err[tag]||0)+1}
 /* Vorlesen ohne Mathe-Ersetzungen (für Sachunterricht, Deutsch …) */
-function sayPlain(html){try{const tx=String(html).replace(/<[^>]+>/g,' ').replace(/\{\?\}/g,' … ').replace(/\s+/g,' ');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(tx);u.lang='de-DE';u.rate=.88;speechSynthesis.speak(u)}catch(e){}}
+function sayPlain(html){try{let h=String(html);while(/<svg/.test(h))h=h.replace(/<svg(?:(?!<svg)[\s\S])*?<\/svg>/g,' ');const tx=h.replace(/<[^>]+>/g,' ').replace(/\{\?\}/g,' … ').replace(/\s+/g,' ');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(tx);u.lang='de-DE';u.rate=.88;speechSynthesis.speak(u)}catch(e){}}
 function speak(html){try{const tx=html.replace(/<[^>]+>/g,' ').replace(/\{\?\}|\?(?=\s*$)/g,' wie viel ').replace(/−/g,' minus ').replace(/:/g,' geteilt durch ').replace(/\s+/g,' ');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(tx);u.lang='de-DE';u.rate=.92;speechSynthesis.speak(u)}catch(e){}}
 
 const ICON={
@@ -142,7 +142,15 @@ function renderLearn(){
 /* Aufgabenarten: 'num' (Ziffernblock), 'choice' (Auswahl), 'word' (Buchstaben-Tastatur), 'tiles' (Buchstaben-Puzzle) */
 const INPUT_KINDS=['num','word','tiles'];
 const KB=['qwertzuiopü','asdfghjklöä','yxcvbnmß'];
-function startPractice(id){const s=STMAP[id];S.intro[id]=1;save();P={id,tasks:Array.from({length:s.n},()=>s.gen()),i:0,first:0,earned:0,requeued:0,res:[]};view='practice';newTask()}
+/* Jede Aufgabe hat einen Schlüssel (key, sonst prompt/story). In einer Runde kommt kein Schlüssel zweimal vor,
+   und die erste Aufgabe ist nie die letzte der vorigen Runde. */
+const lastKeys={};
+function taskKey(t){return t.key||t.prompt||t.story||''}
+function genUnique(s,used){let t;for(let i=0;i<40;i++){t=s.gen();if(!used.includes(taskKey(t)))return t}return t}
+function startPractice(id){const s=STMAP[id];S.intro[id]=1;save();
+ const tasks=[];for(let i=0;i<s.n;i++)tasks.push(genUnique(s,(lastKeys[id]?[lastKeys[id]]:[]).concat(tasks.map(taskKey))));
+ lastKeys[id]=taskKey(tasks[tasks.length-1]);
+ P={id,tasks,i:0,first:0,earned:0,requeued:0,res:[]};view='practice';newTask()}
 function clr(){P.input='';P.used=[];P.caps=false}
 function newTask(){clearTimeout(flashTimer);const t=P.tasks[P.i];Object.assign(P,{t,input:'',used:[],caps:false,att:0,mode:t.stepsOnly?'steps':'main',si:0,satt:0,stepErr:false,fb:null,solved:false,log:[],wrong:[],flashing:false});if(t.flash)return startFlash();render()}
 function startFlash(){const t=P.t;P.flashing=true;clearTimeout(flashTimer);render();if(t.sayWord)sayPlain(t.sayWord);
@@ -220,7 +228,7 @@ function finishSteps(pre){
  const t=P.t;
  if(t.stepsOnly){const first=!P.stepErr;return win(first?3:2,first,true,pre)}
  win(1,false,true,pre)}
-function requeue(){if(P.requeued<2){P.tasks.push(P.t&&P.t.again?P.t.again():STMAP[P.id].gen());P.requeued++}}
+function requeue(){if(P.requeued<2){P.tasks.push(P.t&&P.t.again?P.t.again():genUnique(STMAP[P.id],P.tasks.map(taskKey)));P.requeued++}}
 function win(gain,first,viaSteps,pre){
  const t=P.t;S.shoes+=gain;P.earned+=gain;if(first)P.first++;P.res[P.i]=first?'a':(viaSteps?'c':'b');P.solved=true;ponyMood='happy';
  if(t.onWin)t.onWin(first);

@@ -222,3 +222,13 @@ ol.rules{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
 .wald text{font-family:var(--display);font-weight:600}
 @media (max-width:440px){.kk{min-height:46px;font-size:1.15rem;border-radius:9px}.kbr{gap:3px}.tile{width:48px;height:54px;font-size:1.4rem}}
 .grouphead{margin:14px 0 8px;font-family:var(--display);font-weight:600;font-size:.95rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+
+/* ---------- Waldreise (Gedächtnis-Pfad) ---------- */
+.scene{display:block;width:100%;max-width:420px;height:auto;margin:0 auto;border-radius:16px;border:2px solid var(--line)}
+.jmap{display:block;width:100%;max-width:360px;height:auto;margin:0 auto}
+.chain{display:flex;flex-wrap:wrap;gap:6px 4px;justify-content:center;align-items:center;font-family:var(--display);font-weight:600;font-size:1.05rem;margin:0}
+.chain span{background:var(--hay-soft);border-radius:999px;padding:4px 12px}
+.chain i{font-style:normal;color:var(--muted)}
+.facts{font-size:.95rem;color:var(--muted);margin:0;line-height:1.45}
+.facts b{color:var(--ink)}
+.story2{font-size:1.1rem;line-height:1.6;margin:0}

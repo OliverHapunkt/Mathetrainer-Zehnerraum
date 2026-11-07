@@ -16,3 +16,7 @@ Lerntrainer (statische Seite, GitHub Pages von `main`) für ein Kind in Klasse 2
 - `js/core.js` Kern (Fachwahl, Übungsablauf, Aufgabenarten num/choice/word/tiles)
 - `js/topics/*.js` je Thema eine Datei, `registerTopic({subject:'mathe'|'hsu', …})`, in `index.html` einbinden
 - Inhalte HSU „Der Wald“ stammen aus dem Schulheft (Stockwerke, Teile des Baumes, Waldregeln, Nadelbäume)
+
+## Lernmethoden
+- „Reise im Kopf“ (Routen-/Gedächtnispfad): Wissen wird entlang eines Weges mit Merk-Bildern gelernt, von unten nach oben. Das Kind lernt gut mit Mnemotechniken und Geschichten
+- Aufgaben brauchen einen eindeutigen `key`, damit nichts doppelt in einer Runde kommt

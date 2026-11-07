@@ -114,19 +114,19 @@ function makeTiles(x){
 function genDetektiv(x){
  x=x||pickWord();const h=hooks(x),again=()=>genDetektiv(x);
  const mode=!isNoun(x)&&Math.random()<.5?'gross':pick(['which','which','gap','gap','gross']);
- if(mode==='gross')return Object.assign({kind:'choice',prompt:`<b>Groß oder klein?</b><br><span class="q">${ctxDots(x)}</span>`,answer:x.w,options:shuffle([x.w,flip(x.w)]),
+ if(mode==='gross')return Object.assign({kind:'choice',key:'w:'+x.w,prompt:`<b>Groß oder klein?</b><br><span class="q">${ctxDots(x)}</span>`,answer:x.w,options:shuffle([x.w,flip(x.w)]),
   diagnose:()=>({tag:'gross',msg:grossMsg(x)}),explain:grossMsg(x),after:after(x),say:ctxFull(x),again},h);
- if(mode==='gap')return Object.assign({kind:'choice',prompt:`<span class="q">${x.c.replace('{?}',gapWord(x))}</span><br><b>Welche Buchstaben fehlen?</b>`,answer:x.g[1],options:shuffle(x.g[3]),
+ if(mode==='gap')return Object.assign({kind:'choice',key:'w:'+x.w,prompt:`<span class="q">${x.c.replace('{?}',gapWord(x))}</span><br><b>Welche Buchstaben fehlen?</b>`,answer:x.g[1],options:shuffle(x.g[3]),
   diagnose:()=>({tag:x.t,msg:x.tip}),explain:x.tip,after:after(x),say:ctxFull(x),again},h);
- return Object.assign({kind:'choice',prompt:`<b>Welches Wort ist richtig geschrieben?</b><br><span class="q">${ctxDots(x)}</span>`,answer:x.w,options:shuffle([x.w,...x.wr.slice(0,2)]),
+ return Object.assign({kind:'choice',key:'w:'+x.w,prompt:`<b>Welches Wort ist richtig geschrieben?</b><br><span class="q">${ctxDots(x)}</span>`,answer:x.w,options:shuffle([x.w,...x.wr.slice(0,2)]),
   diagnose:v=>({tag:x.t,msg:`<span class="wort">${esc(v)}</span> ist leider falsch.<div class="tipbox">Tipp: ${x.tip}</div>`}),explain:x.tip,after:after(x),say:ctxFull(x),again},h)}
 function genPuzzle(x){
  x=x||pickWord();const tiles=makeTiles(x);
- return Object.assign({kind:'tiles',tiles,prompt:`<span class="q">${x.c}</span>`,answer:x.w,accept:x.acc,
+ return Object.assign({kind:'tiles',key:'w:'+x.w,tiles,prompt:`<span class="q">${x.c}</span>`,answer:x.w,accept:x.acc,
   diagnose:v=>spellDiag(v,x),steps:spellSteps(x,'tiles',tiles),stepsFor:tag=>spellSteps(x,'tiles',tiles,tag),after:after(x),say:ctxFull(x),again:()=>genPuzzle(x)},hooks(x))}
 function genBlitz(x){
  x=x||pickWord();
- return Object.assign({kind:'word',flash:true,sayWord:x.w,prompt:`<span class="q">${x.c}</span>`,answer:x.w,accept:x.acc,
+ return Object.assign({kind:'word',key:'w:'+x.w,flash:true,sayWord:x.w,prompt:`<span class="q">${x.c}</span>`,answer:x.w,accept:x.acc,
   diagnose:v=>spellDiag(v,x),steps:spellSteps(x,'word'),stepsFor:tag=>spellSteps(x,'word',null,tag),after:after(x),say:ctxFull(x),again:()=>genBlitz(x)},hooks(x))}
 
 /* ---------- Sachwissen: Stockwerke des Waldes ---------- */
@@ -165,7 +165,7 @@ function schichtTask(prompt,i,vis){
   explain:SDESC[i],after:SDESC[i]}}
 function genSchicht(){
  const r=Math.random();
- if(r<.3){const i=R(0,4);return schichtTask('Wie heißt das <b>markierte</b> Stockwerk?',i,solved=>waldSchichten(i,!solved))}
+ if(r<.3){const i=R(0,4);return Object.assign(schichtTask('Wie heißt das <b>markierte</b> Stockwerk?',i,solved=>waldSchichten(i,!solved)),{key:'mark'+i})}
  if(r<.45){const up=Math.random()<.5,i=up?R(1,4):R(0,3),j=up?i-1:i+1;
   return schichtTask(`Welches Stockwerk liegt direkt <b>${up?'über':'unter'}</b> der ${SCHICHTEN[i]}?`,j,solved=>solved?waldSchichten(j,false):'')}
  const[q,i]=pick(SQ);return schichtTask(q,i)}
@@ -187,7 +187,7 @@ function baumTask(prompt,i,vis){
   diagnose:v=>({tag:'baum',msg:`${BDESC[BAUMTEILE.indexOf(v)]} Passt das zur Frage?`}),explain:BDESC[i],after:BDESC[i]}}
 function genBaum(){
  const r=Math.random();
- if(r<.3){const i=R(0,2);return baumTask('Wie heißt der <b>markierte</b> Teil?',i,solved=>baumTeile(i,!solved))}
+ if(r<.3){const i=R(0,2);return Object.assign(baumTask('Wie heißt der <b>markierte</b> Teil?',i,solved=>baumTeile(i,!solved)),{key:'mark'+i})}
  if(r<.42)return{kind:'choice',prompt:'Die Blätter stellen mit Sonnenlicht <b>Sauerstoff</b> her. Wie nennt man das?',answer:'Fotosynthese',options:shuffle(['Fotosynthese','Winterschlaf','Verdunstung']),
   diagnose:()=>({tag:'baum',msg:'Das ist etwas anderes. Das Wort fängt mit <b>Foto</b> an!'}),explain:'Das nennt man <b>Fotosynthese</b>.',after:`<span class="wort">${mark(WMAP.Fotosynthese)}</span> – das y spricht man wie ü.`};
  if(r<.52)return{kind:'choice',prompt:'Was stellen die <b>Blätter</b> mit Sonnenlicht her?',answer:'Sauerstoff',options:shuffle(['Sauerstoff','Regen','Honig']),
@@ -239,18 +239,19 @@ const RG=[
  {r:'Wir essen keine Beeren und Pilze!',s:'Am Weg wachsen rote Beeren. Sie sehen lecker aus.',ok:'Ich esse sie nicht. Sie könnten giftig sein.',no:['Ich probiere nur eine.','Ich esse eine ganze Handvoll.'],w:'Beeren'},
  {r:'Wir achten auf den Wald!',s:'Ein Kind will seinen Namen in die Rinde eines Baumes ritzen.',ok:'Ich sage: Bitte nicht, das verletzt den Baum!',no:['Ich ritze meinen Namen auch hinein.','Ich schaue einfach zu.']}];
 function genRegel(){
- const g=pick(RG);
+ const g=pick(RG),gi=RG.indexOf(g);
  if(g.w&&Math.random()<.3){const x=WMAP[g.w];
-  return Object.assign({kind:'choice',prompt:`<b>Waldregel:</b> Welches Wort ist richtig geschrieben?<br><span class="q">${g.r.replace(g.w,'…')}</span>`,answer:x.w,options:shuffle([x.w,...x.wr.slice(0,2)]),
+  return Object.assign({kind:'choice',prompt:`<b>Waldregel:</b> Welches Wort ist richtig geschrieben?<br><span class="q">${g.r.replace(g.w,'…')}</span>`,answer:x.w,options:shuffle([x.w,...x.wr.slice(0,2)]),key:'regel'+gi,
    diagnose:()=>({tag:x.t,msg:x.tip}),explain:x.tip,after:after(x),say:g.r},hooks(x))}
  const rule=`<b>Waldregel:</b> ${g.r}${g.why?'<br>'+g.why:''}`;
- return{kind:'choice',prompt:`<span class="q">${g.s}</span><br><b>Was machst du?</b>`,answer:g.ok,options:shuffle([g.ok,...g.no]),
+ return{kind:'choice',key:'regel'+gi,prompt:`<span class="q">${g.s}</span><br><b>Was machst du?</b>`,answer:g.ok,options:shuffle([g.ok,...g.no]),
   diagnose:()=>({tag:'regeln',msg:'Hmm, ist das gut für den Wald und die Tiere? Denk an die Waldregeln!'}),explain:rule,after:rule,say:g.s+' Was machst du?'}}
 
-function genMix(){return pick([genSchicht,genBaum,genNadel,genRegel,()=>genDetektiv(),()=>genDetektiv(),()=>genBlitz()])()}
+function genMix(){return pick([genSchicht,genBaum,genNadel,genRegel,()=>genDetektiv(),()=>genDetektiv(),()=>genBlitz(),...(globalThis.WALDREISE_STATIONS?[globalThis.WALDREISE_STATIONS[0].gen,globalThis.WALDREISE_STATIONS[2].gen]:[])])()}
 
 /* ---------- Übungsplätze ---------- */
 const ST=[
+ ...(globalThis.WALDREISE_STATIONS||[]),
  {id:'wald-stockwerke',group:'Wald-Wissen',title:'Stockwerke des Waldes',sub:'Von der Krone bis zur Wurzel',n:6,gen:genSchicht,learn:[
   {h:'Der Wald hat Stockwerke',b:`<div class="vis">${waldSchichten()}</div><p>Wie ein Haus hat der Wald <b>fünf Stockwerke</b> – von ganz oben bis unter die Erde.</p>`},
   {h:'Die oberen Stockwerke',b:`<p>${SDESC[0]}</p><p>${SDESC[1]} Viele Vögel bauen hier ihre Nester – die Dornen schützen sie.</p>`},
@@ -287,6 +288,7 @@ registerTopic({
  stations:ST,
  turnier:{title:'Wald-Ritt',sub:'Alles gemischt',n:8,gen:genMix},
  errNames:{
+  ...(globalThis.WALDREISE_ERR||{}),
   schicht:'Stockwerke des Waldes verwechselt',
   baum:'Teile des Baumes verwechselt',
   nadel:'Nadelbäume verwechselt',
