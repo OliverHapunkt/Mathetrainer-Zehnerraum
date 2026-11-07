@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathe-Trainer: Hunderter-Schritt</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; background-color: #f0f4f8; margin: 0; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
+        .counter-container { background-color: #e8f4fd; padding: 10px; border-radius: 10px; margin-bottom: 25px; }
+        .counter { font-weight: bold; color: #2ecc71; font-size: 1.3rem; }
+        .task-line { font-size: 2.2rem; font-weight: bold; margin-bottom: 10px; color: #2c3e50; border-bottom: 3px solid #34495e; display: inline-block; padding: 0 20px 5px 20px; }
+        .step-area { background: #fafafa; padding: 20px; border-radius: 15px; margin-top: 20px; }
+        .step-row { margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1.4rem; }
+        input { width: 65px; padding: 10px; font-size: 1.3rem; text-align: center; border: 2px solid #dcdde1; border-radius: 10px; outline: none; }
+        input.correct { border-color: #2ecc71; background-color: #f1fdf5; }
+        input.wrong { border-color: #e74c3c; background-color: #fff5f5; }
+        button { background-color: #3498db; color: white; border: none; padding: 15px 30px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
+        .reset-link { display: inline-block; margin-top: 20px; color: #bdc3c7; font-size: 0.8rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Mathe-Heldin 🌟</h1>
+    <div class="counter-container">Gelöste Aufgaben: <span class="counter" id="count">0</span></div>
+    
+    <div class="task-line">
+        <span id="n1">?</span> + <span id="n2">?</span> = <input type="number" id="res_final">
+    </div>
+
+    <div class="step-area">
+        <div class="step-row">
+            <span id="s1_start">?</span> + <span id="s1_einer">?</span> = <input type="number" id="s1_res">
+        </div>
+        <div class="step-row">
+            <input type="number" id="s2_start"> + <input type="number" id="s2_zehner"> = <input type="number" id="s2_res">
+        </div>
+    </div>
+
+    <div id="msg" style="margin-top:15px; font-weight:bold;"></div>
+    <button onclick="checkTask()" id="btn-action">Prüfen</button>
+    <br>
+    <span class="reset-link" onclick="resetCounter()">Zähler zurücksetzen</span>
+</div>
+
+<script>
+    let currentTask = {};
+    let solvedCount = parseInt(localStorage.getItem('matheZaehler_v2')) || 0;
+
+    function generateTask() {
+        document.getElementById('count').innerText = solvedCount;
+        
+        // Zufällige Zahlen im Bereich 10-80, damit das Ergebnis unter 100 bleibt
+        let n1 = Math.floor(Math.random() * 60) + 15;
+        let n2 = Math.floor(Math.random() * 30) + 11;
+        
+        // Zerlegung nach Heft-Schema
+        let n2_einer = n2 % 10;
+        let n2_zehner = n2 - n2_einer;
+        let Zwischenergebnis = n1 + n2_einer;
+        let Endergebnis = n1 + n2;
+
+        currentTask = { n1, n2, n2_einer, n2_zehner, Zwischenergebnis, Endergebnis };
+
+        document.getElementById('n1').innerText = n1;
+        document.getElementById('n2').innerText = n2;
+        document.getElementById('s1_start').innerText = n1;
+        document.getElementById('s1_einer').innerText = n2_einer;
+
+        resetInputs();
+    }
+
+    function resetInputs() {
+        ['res_final', 's1_res', 's2_start', 's2_zehner', 's2_res'].forEach(id => {
+            let el = document.getElementById(id);
+            el.value = '';
+            el.className = '';
+        });
+        document.getElementById('msg').innerText = '';
+        document.getElementById('btn-action').innerText = 'Prüfen';
+        document.getElementById('btn-action').onclick = checkTask;
+    }
+
+    function checkTask() {
+        const val = (id) => parseInt(document.getElementById(id).value);
+        
+        // Prüfung nach Heft-Logik
+        const step1Ok = (val('s1_res') === currentTask.Zwischenergebnis);
+        const step2Ok = (val('s2_start') === currentTask.Zwischenergebnis && 
+                         val('s2_zehner') === currentTask.n2_zehner && 
+                         val('s2_res') === currentTask.Endergebnis);
+        const finalOk = (val('res_final') === currentTask.Endergebnis);
+
+        if (step1Ok && step2Ok && finalOk) {
+            document.getElementById('msg').style.color = '#2ecc71';
+            document.getElementById('msg').innerText = 'Genau wie im Heft! Klasse! 🏆';
+            solvedCount++;
+            localStorage.setItem('matheZaehler_v2', solvedCount);
+            document.getElementById('count').innerText = solvedCount;
+            document.getElementById('btn-action').innerText = 'Nächste Aufgabe';
+            document.getElementById('btn-action').onclick = generateTask;
+            document.querySelectorAll('input').forEach(i => i.className = 'correct');
+        } else {
+            document.getElementById('msg').style.color = '#e74c3c';
+            document.getElementById('msg').innerText = 'Schau noch mal genau hin...';
+        }
+    }
+
+    function resetCounter() {
+        if(confirm("Zähler löschen?")) {
+            solvedCount = 0;
+            localStorage.setItem('matheZaehler_v2', 0);
+            document.getElementById('count').innerText = 0;
+        }
+    }
+
+    generateTask();
+</script>
+</body>
+</html>
