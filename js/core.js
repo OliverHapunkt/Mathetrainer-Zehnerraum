@@ -115,6 +115,7 @@ function renderHome(){
  <div class="reco"><div class="txt"><span class="eyebrow">Heute empfohlen</span><h2>${reco.title}</h2><span class="muted small">${reco.sub} · ca. 5 Minuten</span></div><button class="btn" data-go="${reco.id}">Los geht's</button></div>
  <h3>${T.sub}</h3>
  ${[...new Set(T.stations.map(s=>s.group||''))].map(g=>`${g?`<p class="grouphead">${g}</p>`:''}<div class="grid">${T.stations.filter(s=>(s.group||'')===g).map(s=>`<button class="st" data-go="${s.id}"><b>${s.title}</b><span>${s.sub}</span><div class="stars" aria-label="${starsOf(s.id)} von 3 Sternen">${[1,2,3].map(i=>ICON.star(i<=starsOf(s.id))).join('')}</div></button>`).join('')}</div>`).join('')}
+ ${(T.tools||[]).map(tl=>`<button class="toolcard" data-tool="${tl.id}"><span class="tico" aria-hidden="true">${tl.icon||''}</span><div><b>${tl.title}</b><br><span class="muted small">${tl.sub}</span></div></button>`).join('')}
  <button class="turnier" data-go="${T.turnierStation.id}">${pony('calm',44)}<div><b style="font-family:var(--display);font-size:1.15rem">${T.turnierStation.title}</b><br><span class="muted small">${T.turnierStation.n} gemischte Aufgaben – zeig, was du kannst</span></div><span class="spacer"></span><span class="stars">${[1,2,3].map(i=>ICON.star(i<=starsOf(T.turnierStation.id))).join('')}</span></button>
  <details class="parents"><summary>Für Eltern</summary>
   <p class="small muted" style="margin-top:8px">${T.parentNote?T.parentNote+' ':''}Falsche Antworten werden erkannt und gezielt erklärt. Nach zwei Fehlversuchen wird die Aufgabe gemeinsam in Schritten gelöst, später kommt eine ähnliche Aufgabe nochmal. Empfehlung: täglich 1–2 Runden à 5 Minuten statt einer langen Sitzung.</p>
@@ -254,11 +255,15 @@ function renderDone(){
  <div class="pause"><span class="eyebrow">Pony-Pause</span><p>${pick(PAUSE)}</p></div>
  <div class="row" style="justify-content:center"><button class="btn ghost" data-act="home">Zum Stall</button><button class="btn" data-go="${P.id}">Nochmal üben</button></div></div>`;
  ponyMood='calm'}
-function render(){window.scrollTo&&view!=='practice'&&window.scrollTo(0,0);({welcome:renderWelcome,pick:renderPick,home:renderHome,learn:renderLearn,practice:renderPractice,done:renderDone})[view]()}
+const EXTRA_VIEWS={},CLICK_HOOKS=[],KEY_HOOKS=[];
+function setView(v){view=v;render()}
+function render(){window.scrollTo&&view!=='practice'&&view!=='calc'&&window.scrollTo(0,0);const f=EXTRA_VIEWS[view]||({welcome:renderWelcome,pick:renderPick,home:renderHome,learn:renderLearn,practice:renderPractice,done:renderDone})[view];f()}
 
 /* ---------- events ---------- */
 app.addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b)return;
+ for(const h of CLICK_HOOKS){if(h(b,e)===true)return}
+ if(b.dataset.tool){const tl=curTopic().tools.find(x=>x.id===b.dataset.tool);if(tl)tl.open();return}
  if(b.dataset.subject){S.subject=b.dataset.subject;save();view='home';return render()}
  if(b.dataset.topic){S.topic=b.dataset.topic;S.tsel[S.subject]=b.dataset.topic;save();return render()}
  if(b.dataset.go){const id=b.dataset.go;if(view==='done'){startPractice(id)}else openStation(id);return}
@@ -289,6 +294,7 @@ app.addEventListener('click',e=>{
  if(a==='welcome-go')return welcomeGo();
 });
 document.addEventListener('keydown',e=>{
+ for(const h of KEY_HOOKS){if(h(e)===true)return}
  if(view!=='practice'||!P||e.target.tagName==='INPUT')return;
  if(P.solved&&(e.key==='Enter'||e.key===' ')){e.preventDefault();return next()}
  if(P.solved||P.flashing)return;

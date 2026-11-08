@@ -162,6 +162,7 @@ registerTopic({
  sub:'Rechnen im Zahlenraum bis 100',
  stations:ST,
  turnier:{title:'Turnier-Ritt',sub:'Alles gemischt',n:8,gen:genMix},
+ tools:[{id:'calc',title:'Rechen-Erklärer',sub:'Tippe eine Aufgabe ein – ich zeige dir den Weg',icon:'<svg viewBox="0 0 40 40" width="40" height="40"><rect x="4" y="4" width="32" height="32" rx="9" fill="var(--hay-soft)" stroke="var(--hay)" stroke-width="2.5"/><path d="M13 20h14M20 13v14" stroke="var(--ink)" stroke-width="3.2" stroke-linecap="round"/></svg>',open:()=>openCalc()}],
  errNames:{
   umdreh:'Umdreh-Falle (Einer bei Minus vertauscht)',
   zehner:'Zehner vergessen / um 10 daneben',

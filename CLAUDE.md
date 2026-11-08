@@ -20,3 +20,8 @@ Lerntrainer (statische Seite, GitHub Pages von `main`) für ein Kind in Klasse 2
 ## Lernmethoden
 - „Reise im Kopf“ (Routen-/Gedächtnispfad): Wissen wird entlang eines Weges mit Merk-Bildern gelernt, von unten nach oben. Das Kind lernt gut mit Mnemotechniken und Geschichten
 - Aufgaben brauchen einen eindeutigen `key`, damit nichts doppelt in einer Runde kommt
+
+## Rechen-Erklärer (Mathe)
+- `js/calc-engine.js`: reine Erklär-Logik `CALC.explain(a,op,b)` (+ − · :), Schritte nach Heft-Methode (Zehner zuerst, Zehnerübergang, Tausch-/Umkehraufgabe, Kernaufgaben beim Einmaleins). Ohne DOM, per `node`/`vm` testbar.
+- `js/calc-explainer.js`: Eingabe, Ansicht „Zeig mir den Weg“ / „Ich rechne mit“. Hängt sich über `EXTRA_VIEWS`, `CLICK_HOOKS`, `KEY_HOOKS` (core.js) ein; Startkarte über `tools:[…]` im Thema (`registerTopic`).
+- Zahlenraum bis 100, Einmaleins bis 10·10, geteilt durch 1–10 (mit Rest). Nichts wird gespeichert.

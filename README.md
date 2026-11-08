@@ -43,6 +43,9 @@ Stations-IDs müssen über alle Themen eindeutig sein (Präfix mit dem Themen-K�
 - `js/topics/_vorlage.js` – Vorlage für neue Themen (nicht eingebunden)
 - `js/main.js` – Startet die App
 
+## Rechen-Erklärer
+Im Fach Mathe tippt das Kind eine Aufgabe ein (+ − · :) und bekommt den Weg Schritt für Schritt gezeigt – oder rechnet die Zwischenschritte selbst mit. Logik: `js/calc-engine.js`, Oberfläche: `js/calc-explainer.js`.
+
 ## Lokal testen
 `index.html` per Doppelklick öffnen. Alternativ: `python3 -m http.server` im Ordner.
 
