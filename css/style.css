@@ -264,3 +264,18 @@ ol.rules{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
 .pad .op{font-size:2rem}
 .pad .op[data-v="·"]{font-size:3rem;line-height:1}
 .pad .op .bigdot{display:inline-block;width:12px;height:12px;border-radius:50%;background:currentColor;vertical-align:middle}
+
+/* ---------- Flip-7-Rechenhilfe ---------- */
+.f7grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.f7mods{grid-template-columns:repeat(6,1fr)}
+.f7b{min-height:58px;border-radius:12px;background:#fff;color:#222;border:3px solid hsl(var(--h,200) 55% 55%);font-family:var(--display);font-weight:700;font-size:1.5rem;transition:transform .08s}
+.f7b.mod{--h:200;border-color:#6a7fa0;font-size:1.2rem}
+.f7b.on{background:hsl(var(--h,200) 70% 60%);color:#111;transform:translateY(-4px);box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.f7b.mod.on{background:#9fb4d6}
+.f7bust{min-height:48px;border-radius:999px;border:2px dashed var(--warn,#c0392b);font-weight:700;padding:0 16px;background:transparent;color:var(--ink)}
+.f7bust.on{background:var(--warn-soft);border-style:solid}
+.f7hand{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:56px;align-items:center}
+.f7c{display:inline-grid;place-items:center;min-width:40px;height:54px;padding:0 6px;border-radius:9px;background:#fff;color:#222;border:3px solid hsl(var(--h,200) 55% 55%);font-family:var(--display);font-weight:700;font-size:1.3rem}
+.f7c.mod{border-color:#6a7fa0;background:#e6edf8}
+.f7c.bust{border-color:var(--warn,#c0392b);font-size:.9rem}
+@media (max-width:380px){.f7grid{gap:5px}.f7b{font-size:1.25rem}}

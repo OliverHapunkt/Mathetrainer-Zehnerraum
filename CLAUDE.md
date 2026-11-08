@@ -25,3 +25,7 @@ Lerntrainer (statische Seite, GitHub Pages von `main`) für ein Kind in Klasse 2
 - `js/calc-engine.js`: reine Erklär-Logik `CALC.explain(a,op,b)` (+ − · :), Schritte nach Heft-Methode (Zehner zuerst, Zehnerübergang, Tausch-/Umkehraufgabe, Kernaufgaben beim Einmaleins). Ohne DOM, per `node`/`vm` testbar.
 - `js/calc-explainer.js`: Eingabe, Ansicht „Zeig mir den Weg“ / „Ich rechne mit“. Hängt sich über `EXTRA_VIEWS`, `CLICK_HOOKS`, `KEY_HOOKS` (core.js) ein; Startkarte über `tools:[…]` im Thema (`registerTopic`).
 - Zahlenraum bis 100, Einmaleins bis 10·10, geteilt durch 1–10 (mit Rest). Nichts wird gespeichert.
+
+## Flip-7-Rechenhilfe (Mathe)
+- `js/flip7.js`: Karten der Hand antippen → Kind tippt sein selbst gerechnetes Ergebnis → Vergleich; bei Fehler gezielte Erklärung (`FLIP7.diagnose`), nach 2. Fehlversuch oder „Rechnung zeigen“ der Rechenweg (`FLIP7.steps`).
+- Regeln: Zahlenkarten addieren, ×2 nur auf Zahlenkarten, Plus-Karten danach, 7 verschiedene Zahlen = +15, doppelte Zahl = Bust = 0. Aktionskarten zählen 0 und fehlen.

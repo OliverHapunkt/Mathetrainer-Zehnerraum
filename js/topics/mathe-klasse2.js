@@ -162,7 +162,8 @@ registerTopic({
  sub:'Rechnen im Zahlenraum bis 100',
  stations:ST,
  turnier:{title:'Turnier-Ritt',sub:'Alles gemischt',n:8,gen:genMix},
- tools:[{id:'calc',title:'Rechen-Erklärer',sub:'Tippe eine Aufgabe ein – ich zeige dir den Weg',icon:'<svg viewBox="0 0 40 40" width="40" height="40"><rect x="4" y="4" width="32" height="32" rx="9" fill="var(--hay-soft)" stroke="var(--hay)" stroke-width="2.5"/><path d="M13 20h14M20 13v14" stroke="var(--ink)" stroke-width="3.2" stroke-linecap="round"/></svg>',open:()=>openCalc()}],
+ tools:[{id:'calc',title:'Rechen-Erklärer',sub:'Tippe eine Aufgabe ein – ich zeige dir den Weg',icon:'<svg viewBox="0 0 40 40" width="40" height="40"><rect x="4" y="4" width="32" height="32" rx="9" fill="var(--hay-soft)" stroke="var(--hay)" stroke-width="2.5"/><path d="M13 20h14M20 13v14" stroke="var(--ink)" stroke-width="3.2" stroke-linecap="round"/></svg>',open:()=>openCalc()},
+  {id:'flip7',title:'Flip-7-Rechenhilfe',sub:'Karten antippen, selbst rechnen, dann vergleichen',icon:'<svg viewBox="0 0 40 40" width="40" height="40"><rect x="9" y="5" width="22" height="30" rx="5" fill="#fff" stroke="var(--grass)" stroke-width="2.5" transform="rotate(-8 20 20)"/><text x="20" y="27" text-anchor="middle" font-size="19" font-weight="800" fill="var(--grass)" transform="rotate(-8 20 20)">7</text></svg>',open:()=>openFlip7()}],
  errNames:{
   umdreh:'Umdreh-Falle (Einer bei Minus vertauscht)',
   zehner:'Zehner vergessen / um 10 daneben',

@@ -144,5 +144,5 @@ KEY_HOOKS.push((e)=>{
   if(key==='Enter'||key===' '){e.preventDefault();next();return true}}
  return false});
 
-globalThis.openCalc=function(){reset();view='calc';render()};
+globalThis.openCalc=function(){window.scrollTo(0,0);reset();view='calc';render()};
 })();

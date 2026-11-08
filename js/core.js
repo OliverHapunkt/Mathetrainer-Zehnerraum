@@ -257,7 +257,7 @@ function renderDone(){
  ponyMood='calm'}
 const EXTRA_VIEWS={},CLICK_HOOKS=[],KEY_HOOKS=[];
 function setView(v){view=v;render()}
-function render(){window.scrollTo&&view!=='practice'&&view!=='calc'&&window.scrollTo(0,0);const f=EXTRA_VIEWS[view]||({welcome:renderWelcome,pick:renderPick,home:renderHome,learn:renderLearn,practice:renderPractice,done:renderDone})[view];f()}
+function render(){window.scrollTo&&view!=='practice'&&!EXTRA_VIEWS[view]&&window.scrollTo(0,0);const f=EXTRA_VIEWS[view]||({welcome:renderWelcome,pick:renderPick,home:renderHome,learn:renderLearn,practice:renderPractice,done:renderDone})[view];f()}
 
 /* ---------- events ---------- */
 app.addEventListener('click',e=>{
