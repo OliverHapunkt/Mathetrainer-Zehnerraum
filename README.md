@@ -43,6 +43,9 @@ Stations-IDs müssen über alle Themen eindeutig sein (Präfix mit dem Themen-K�
 - `js/topics/_vorlage.js` – Vorlage für neue Themen (nicht eingebunden)
 - `js/main.js` – Startet die App
 
+## Teilen mit Rest
+Station „Teilen mit Rest“: Äpfel gerecht auf Pferde verteilen, Rest im Eimer. Eingabe in zwei Feldern (Ergebnis, Rest), gezielte Hinweise bei zu großem Rest oder zu großem Ergebnis, Hilfe in drei Schritten (Zahl aus der Reihe suchen, Malaufgabe, Rest). Dazu die Station „Mal und Geteilt“ fürs gemischte Einmaleins.
+
 ## Rechen-Erklärer
 Im Fach Mathe tippt das Kind eine Aufgabe ein (+ − · :) und bekommt den Weg Schritt für Schritt gezeigt – oder rechnet die Zwischenschritte selbst mit. Logik: `js/calc-engine.js`, Oberfläche: `js/calc-explainer.js`.
 

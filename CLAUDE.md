@@ -21,6 +21,12 @@ Lerntrainer (statische Seite, GitHub Pages von `main`) für ein Kind in Klasse 2
 - „Reise im Kopf“ (Routen-/Gedächtnispfad): Wissen wird entlang eines Weges mit Merk-Bildern gelernt, von unten nach oben. Das Kind lernt gut mit Mnemotechniken und Geschichten
 - Aufgaben brauchen einen eindeutigen `key`, damit nichts doppelt in einer Runde kommt
 
+## Einmaleins und Teilen mit Rest (Mathe)
+- Stationen `malgeteilt` (Mal und Geteilt gemischt, Schritte aus `CALC.explain`) und `rest` (Teilen mit Rest, Teiler 2–9, Ergebnis bis 10)
+- Aufgabenart `kind:'rest'` in core.js: zwei Felder „Ergebnis R Rest“, `answer:'5 R 1'`; Eingabe Ziffern, „Zum Rest →“ (Tastatur: R/Leertaste/Tab), dann Prüfen
+- Bild: Äpfel auf Pferde verteilt, Rest im Eimer (`appleVis`, nur bei Teiler ≤ 6 und Ergebnis ≤ 6, erst in der Hilfe/nach Lösung)
+- Kernregel für Rückmeldungen: Der Rest muss kleiner als der Teiler sein
+
 ## Rechen-Erklärer (Mathe)
 - `js/calc-engine.js`: reine Erklär-Logik `CALC.explain(a,op,b)` (+ − · :), Schritte nach Heft-Methode (Zehner zuerst, Zehnerübergang, Tausch-/Umkehraufgabe, Kernaufgaben beim Einmaleins). Ohne DOM, per `node`/`vm` testbar.
 - `js/calc-explainer.js`: Eingabe, Ansicht „Zeig mir den Weg“ / „Ich rechne mit“. Hängt sich über `EXTRA_VIEWS`, `CLICK_HOOKS`, `KEY_HOOKS` (core.js) ein; Startkarte über `tools:[…]` im Thema (`registerTopic`).

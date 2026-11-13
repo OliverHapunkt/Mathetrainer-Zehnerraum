@@ -89,6 +89,11 @@ details.parents summary{cursor:pointer;font-weight:800}
 .q{font-size:1.15rem;font-weight:700;text-align:center}
 .slot{display:inline-block;min-width:1.9em;padding:0 .2em;border-bottom:4px solid var(--hay);color:var(--ink);text-align:center}
 .slot.empty{color:var(--muted)}
+.slot.act{border-bottom-color:var(--tens);background:var(--info-soft);border-radius:8px 8px 0 0}
+.slot.idle{border-bottom-color:var(--line)}
+.rlbl{font-weight:700;color:var(--ones);padding:0 .1em}
+.resthint{margin:6px 0 2px;text-align:center}
+.applevis text{font-family:var(--body);font-size:13px;fill:var(--muted)}
 .story{background:var(--surface2);border-radius:14px;padding:14px 16px;font-size:1.1rem;line-height:1.6}
 .story b{color:var(--tens)}
 .frage{margin-top:8px;font-weight:800}

@@ -118,7 +118,55 @@ function genSach(){
    {q:`Schritt 2: Beide zusammen:<br><b>${a} + ${a-d}</b> = {?}`,a:2*a-d,diagnose:v=>v===a-d?{tag:'sach',msg:`Das ist nur ${p2}! Gefragt ist: <b>beide zusammen</b>.`}:null},
    satz(`Beide sammeln zusammen ${2*a-d} Äpfel.`,`${p2} sammelt ${a-d} Äpfel.`)]}
  return{stepsOnly:true,story,frage,steps}}
-function genMix(){return pick([genMinus,genMinus,genPlus,genPH,genHF,genNB,genTU])()}
+/* ---------- Einmaleins: Mal und Geteilt (ohne Rest) ---------- */
+function calcSteps(a,op,b){const E=CALC.explain(a,op,b);return E.steps.filter(x=>x.q).map(x=>({q:`${x.text}<br><b>${x.q}</b>`,a:x.ans,why:x.hint||''}))}
+function genEMS(){
+ const f=R(1,10),g=R(1,10),p=f*g,isDiv=Math.random()<.5;
+ if(!isDiv)return{kind:'num',key:`m${f}·${g}`,prompt:`${f} · ${g} = {?}`,answer:p,
+  diagnose:v=>v===f+g?{tag:'plusstattmal',msg:`Das wäre <b>plus</b>. ${f} · ${g} heißt: ${f}-mal die ${g}.`}:(Math.abs(v-p)===g||Math.abs(v-p)===f)?{tag:'reihe',msg:`Knapp daneben – um eine Reihe verrutscht. Tipp: Rechne mit einer Kernaufgabe (mal 2, mal 5 oder mal 10).`}:null,
+  steps:calcSteps(f,'·',g),after:`Umkehraufgabe: ${p} : ${g} = ${f}`};
+ return{kind:'num',key:`d${p}:${g}`,prompt:`${p} : ${g} = {?}`,answer:f,
+  diagnose:v=>v*g===p?null:v===p-g?{tag:'minusstattgeteilt',msg:`Das wäre <b>minus</b>. ${p} : ${g} heißt: Wie oft passt die ${g} in die ${p}?`}:{tag:'reihe',msg:`Mach die <b>Probe</b> mit Mal: ${v} · ${g} = ${v*g}. Es soll aber <b>${p}</b> herauskommen.`},
+  steps:calcSteps(p,':',g),after:`Probe: ${f} · ${g} = ${p} ✓`}}
+
+/* ---------- Teilen mit Rest ---------- */
+function appleVis(a,b,q,r){
+ const bw=74,bh=28+Math.ceil(Math.max(q,r,1)/3)*20,W=(b+1)*(bw+10)+10;
+ const ap=(x,y)=>`<circle cx="${x}" cy="${y}" r="7.5" fill="#D9443B"/><path d="M${x} ${y-7} q2 -5 6 -6" stroke="#3C8A3F" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+ const fillBox=(x0,n)=>{let o='';for(let i=0;i<n;i++)o+=ap(x0+17+(i%3)*20,40+Math.floor(i/3)*20);return o};
+ let s=`<svg class="applevis" viewBox="0 0 ${W} ${bh+24}" width="${W}" role="img" aria-label="${a} Äpfel auf ${b} Pferde verteilt, ${r} bleiben übrig">`;
+ for(let i=0;i<b;i++){const x=10+i*(bw+10);s+=`<rect x="${x}" y="8" width="${bw}" height="${bh}" rx="12" fill="var(--surface2)" stroke="var(--horse)" stroke-width="2.5"/><text x="${x+bw/2}" y="${bh+24}" text-anchor="middle">Pferd ${i+1}</text>${fillBox(x,q)}`}
+ const x=10+b*(bw+10);
+ s+=`<path d="M${x} 8 h${bw} l-8 ${bh} h-${bw-16}z" fill="var(--hay-soft)" stroke="var(--hay)" stroke-width="2.5" stroke-dasharray="${r?'0':'5 4'}"/><text x="${x+bw/2}" y="${bh+24}" text-anchor="middle" style="fill:var(--ones);font-weight:700">Rest: ${r}</text>${fillBox(x,r)}`;
+ return s+'</svg>'}
+function restDiag(a,b,q,r){return v=>{const m=/^(\d+) R (\d+)$/.exec(v);if(!m)return null;const Q=+m[1],Rr=+m[2];
+ if(Q*b>a)return{tag:'zuviel',msg:`${Q} · ${b} = ${Q*b}. Das ist <b>mehr als ${a}</b> – so viele Äpfel haben wir gar nicht! Nimm ein kleineres Ergebnis.`};
+ if(Rr>=b)return{tag:'restgross',msg:`Der Rest ist ${Rr}. Das ist ${Rr===b?'genauso groß wie':'größer als'} die ${b}! Dann kann jedes Pferd noch einen Apfel bekommen.<br><b>Der Rest muss immer kleiner als ${b} sein.</b>`};
+ if(Q===q)return{tag:'restfalsch',msg:`Das Ergebnis <b>${q}</b> stimmt! Schau nochmal beim Rest: ${a} − ${q*b} = ?`};
+ return{tag:'zuwenig',msg:`${Q} · ${b} = ${Q*b}. Dann bleiben ${a-Q*b} übrig – das reicht noch für jedes Pferd. Geht noch mehr?`}}}
+function genRest(){
+ const b=R(2,9),q=R(1,10),r=Math.random()<.12?0:R(1,b-1),a=q*b+r,ans=`${q} R ${r}`;
+ const small=b<=6&&q<=6,probe=`${q} · ${b} + ${r} = ${a}`;
+ if(q>=2&&Math.random()<.25){
+  const v=pick(['ok','rest','zuviel']);
+  const shown=v==='ok'?ans:v==='rest'?`${q-1} R ${r+b}`:`${q+1} R ${r}`;
+  const A={ok:'Ja, das stimmt.',rest:'Nein, der Rest ist zu groß.',zuviel:'Nein, das Ergebnis ist zu groß.'};
+  const why={ok:`Probe: ${probe} ✓ Und der Rest ${r} ist kleiner als ${b}.`,
+   rest:`Der Rest ${r+b} ist größer als ${b}. Da passt noch einmal die ${b} hinein! Richtig ist: <b>${a} : ${b} = ${ans}</b>.`,
+   zuviel:`${q+1} · ${b} = ${(q+1)*b}. Das ist mehr als ${a}! Richtig ist: <b>${a} : ${b} = ${ans}</b>.`};
+  return{kind:'choice',key:`k${a}:${b}:${v}`,prompt:`<b>Kann das stimmen?</b><br><span class="eq">${a} : ${b} = ${shown}</span>`,answer:A[v],options:Object.values(A),
+   diagnose:()=>({tag:v==='rest'?'restgross':v==='zuviel'?'zuviel':'restpruefen',msg:'Mach die Probe: Ergebnis mal '+b+', dann den Rest dazu. Und: Ist der Rest kleiner als '+b+'?'}),
+   explain:why[v],after:why[v],say:`Kann das stimmen? ${a} geteilt durch ${b} gleich ${shown.replace(' R ',' Rest ')}`}}
+ const opts=[q*b,(q+1)*b,q>1?(q-1)*b:(q+2)*b].map(String);
+ return{kind:'rest',key:`r${a}:${b}`,prompt:`${a} : ${b} = {?}`,answer:ans,say:`${a} geteilt durch ${b}. Wie viel, und wie viel Rest?`,
+  vis:solved=>(small&&(solved||P.mode==='steps'))?appleVis(a,b,q,r):'',
+  diagnose:restDiag(a,b,q,r),
+  steps:[{kind:'choice',q:`Welche Zahl aus der <b>${b}er-Reihe</b> ist am nächsten an ${a} – aber <b>nicht größer</b>?`,options:shuffle(opts),a:String(q*b),
+    diagnose:v=>+v>a?{tag:'zuviel',msg:`${v} ist größer als ${a}. So viele Äpfel haben wir nicht!`}:{msg:`Da geht noch mehr: ${v} + ${b} = ${+v+b}. Das passt auch noch.`},why:`${q*b} ≤ ${a}, aber ${(q+1)*b} ist schon zu viel.`},
+   {q:`Welche Malaufgabe passt?<br><b>{?} · ${b} = ${q*b}</b>`,a:q,why:`Zähle in der ${b}er-Reihe bis ${q*b}.`},
+   {q:`Was bleibt übrig? Das ist der <b>Rest</b>:<br><b>${a} − ${q*b}</b> = {?}`,a:r,why:`${a} − ${q*b} = ${r}.`}],
+  after:`${a} : ${b} = ${ans}<br>Probe: ${probe} ✓`}}
+function genMix(){return pick([genMinus,genMinus,genPlus,genPH,genHF,genNB,genTU,genEMS,genRest])()}
 
 /* ---------- stations + lessons ---------- */
 const ST=[
@@ -150,6 +198,15 @@ const ST=[
   {h:'Vorgänger und Nachfolger',b:`<div class="vis">${strip(53,54,true,true)}</div><p><b>Vorgänger</b> von 53 ist 52 – die Zahl davor (1 weniger).<br><b>Nachfolger</b> von 53 ist 54 – die Zahl danach (1 mehr).</p>`},
   {h:'Nachbarzehner',b:`<p>Die <b>glatten Zehnerzahlen</b> links und rechts von 53:</p><div class="eq" style="font-size:2rem">50 · 53 · 60</div><p>Nachbarzehner enden immer mit <b>0</b>.</p>`},
   {h:'Die Trickfrage',b:`<p>„Der Vorgänger ist 53. Wie heißt die Zahl?“</p><p>53 kommt <b>vor</b> der Zahl. Also ist die Zahl <b>54</b>. Und ihr Nachfolger ist <b>55</b>.</p><div class="merk"><small>Merk dir</small>Erst überlegen: Welche Zahl kenne ich – und wo steht die gesuchte Zahl?</div>`}]},
+ {id:'malgeteilt',title:'Mal und Geteilt',sub:'Das Einmaleins hin und zurück',gen:genEMS,n:8,learn:[
+  {h:'Mal und Geteilt gehören zusammen',b:`<div class="eq" style="font-size:2rem">4 · 5 = 20</div><div class="eq" style="font-size:2rem">20 : 5 = 4</div><p>Geteilt ist die <b>Umkehraufgabe</b> von Mal. Bei <b>20 : 5</b> fragst du: Wie oft passt die 5 in die 20?</p>`},
+  {h:'Kernaufgaben helfen',b:`<p>Diese Aufgaben kannst du schnell:</p><div class="zf"><div>mal 1</div><div>mal 2</div><div>mal 5</div><div>mal 10</div></div><p>Von dort rechnest du weiter: <b>6 · 4</b> = 5 · 4 + 4 = 20 + 4 = 24.</p>`},
+  {h:'Merksatz',b:`<div class="merk"><small>Merk dir</small>Bei Geteilt denkst du an Mal:<br>48 : 8 = ? → ? · 8 = 48 → <b>6</b></div>`}]},
+ {id:'rest',title:'Teilen mit Rest',sub:'Äpfel gerecht an die Pferde verteilen',gen:genRest,n:6,learn:[
+  {h:'Äpfel für die Pferde',b:`<p>Du hast <b>16 Äpfel</b> und <b>3 Pferde</b>. Jedes Pferd soll gleich viele bekommen.</p><div class="vis">${appleVis(16,3,5,1)}</div><p>Jedes Pferd bekommt <b>5</b>. Ein Apfel bleibt im Eimer übrig – das ist der <b>Rest</b>.</p><div class="eq" style="font-size:2rem">16 : 3 = 5 R 1</div>`},
+  {h:'So rechnest du',b:`<ol class="rules"><li>Such in der <b>3er-Reihe</b> die Zahl, die am nächsten an 16 ist – aber nicht größer: 3, 6, 9, 12, <b>15</b>, <s>18</s></li><li>Welche Malaufgabe ist das? <b>5</b> · 3 = 15</li><li>Was bleibt übrig? 16 − 15 = <b>1</b></li></ol>`},
+  {h:'Die Rest-Regel',b:`<div class="merk"><small>Merk dir</small>Der Rest ist immer <b>kleiner</b> als die Zahl, durch die du teilst.</div><p>Bei <b>: 3</b> kann der Rest nur 0, 1 oder 2 sein. Wäre er 3 oder mehr, könnte jedes Pferd noch einen Apfel bekommen!</p><p>Geht es genau auf, ist der Rest <b>0</b>: 15 : 3 = 5 R 0.</p>`},
+  {h:'Die Probe',b:`<p>Erst mal, dann den Rest dazu:</p><div class="eq" style="font-size:2rem">5 · 3 + 1 = 16 ✓</div><p>Kommt die Zahl vom Anfang heraus, stimmt deine Rechnung.</p>`}]},
  {id:'sach',title:'Sachaufgaben',sub:'Jeden Rechenschritt aufschreiben',gen:genSach,n:4,learn:[
   {h:'Wie ein Parcours: 4 Hindernisse',b:`<ol class="rules"><li><b>Lesen</b> – am besten zweimal.</li><li><b>Frage finden</b> – was will ich wissen?</li><li><b>Jeden Rechenschritt</b> einzeln aufschreiben.</li><li><b>Antwortsatz</b> – passt er zur Frage?</li></ol>`},
   {h:'Ein Beispiel',b:`<div class="story">Tim isst <b>24</b> Kekse. Kilian schafft nur <b>halb so viele</b>.<div class="frage">Wie viele essen beide zusammen?</div></div><p>Schritt 1: Kilian: 24 : 2 = 12<br>Schritt 2: Zusammen: 24 + 12 = 36</p><div class="merk">12 ist noch nicht die Antwort! Gefragt war: <b>zusammen</b>.</div>`},
@@ -171,6 +228,14 @@ registerTopic({
   tauschumkehr:'Tausch- und Umkehraufgabe verwechselt',
   richtung:'Richtung im Hunderterfeld',
   nachbar:'Vorgänger / Nachfolger / Nachbarzehner',
-  sach:'Zwischenergebnis als Antwort angegeben'},
- parentNote:'Typische Stolperstellen in Klasse 2: Minus mit Zehnerübergang (Einer werden umgedreht, z. B. 68 − 19 = 51), Platzhalteraufgaben, Tausch- vs. Umkehraufgabe, Hunderterfeld, Nachbarzahlen und zweischrittige Sachaufgaben.'
+  sach:'Zwischenergebnis als Antwort angegeben',
+  plusstattmal:'Plus statt Mal gerechnet',
+  minusstattgeteilt:'Minus statt Geteilt gerechnet',
+  reihe:'Einmaleins: um eine Reihe daneben',
+  restgross:'Teilen mit Rest: Rest zu groß (≥ Teiler)',
+  zuviel:'Teilen mit Rest: Ergebnis zu groß',
+  zuwenig:'Teilen mit Rest: Ergebnis zu klein',
+  restfalsch:'Teilen mit Rest: Rest falsch berechnet',
+  restpruefen:'Teilen mit Rest: Probe nicht gemacht'},
+ parentNote:'Typische Stolperstellen in Klasse 2: Minus mit Zehnerübergang (Einer werden umgedreht, z. B. 68 − 19 = 51), Platzhalteraufgaben, Tausch- vs. Umkehraufgabe, Hunderterfeld, Nachbarzahlen, Einmaleins (Mal und Geteilt), Teilen mit Rest (Rest muss kleiner als der Teiler sein) und zweischrittige Sachaufgaben.'
 });

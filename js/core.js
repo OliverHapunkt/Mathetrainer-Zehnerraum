@@ -140,8 +140,8 @@ function renderLearn(){
  <div class="helpers"><button class="linkbtn" data-act="speak-learn">${ICON.speaker} Vorlesen</button></div></div>
  <div class="row">${L.i>0?'<button class="btn ghost" data-act="lprev">Zurück</button>':''}<span class="spacer"></span>${last?'<button class="btn hay" data-act="lstart">Jetzt üben!</button>':'<button class="btn" data-act="lnext">Weiter</button>'}</div>`}
 
-/* Aufgabenarten: 'num' (Ziffernblock), 'choice' (Auswahl), 'word' (Buchstaben-Tastatur), 'tiles' (Buchstaben-Puzzle) */
-const INPUT_KINDS=['num','word','tiles'];
+/* Aufgabenarten: 'num' (Ziffernblock), 'rest' (Ergebnis und Rest, answer:'5 R 1'), 'choice' (Auswahl), 'word' (Buchstaben-Tastatur), 'tiles' (Buchstaben-Puzzle) */
+const INPUT_KINDS=['num','rest','word','tiles'];
 const KB=['qwertzuiopü','asdfghjklöä','yxcvbnmß'];
 /* Jede Aufgabe hat einen Schlüssel (key, sonst prompt/story). In einer Runde kommt kein Schlüssel zweimal vor,
    und die erste Aufgabe ist nie die letzte der vorigen Runde. */
@@ -158,7 +158,15 @@ function startFlash(){const t=P.t;P.flashing=true;clearTimeout(flashTimer);rende
  const ms=2800+170*String(t.answer).length;flashTimer=setTimeout(()=>{if(P&&P.t===t&&view==='practice'){P.flashing=false;render()}},ms)}
 function curStep(){return P.mode==='main'?P.t:P.t.steps[P.si]}
 function curKind(){if(P.mode==='main')return P.t.kind;const st=P.t.steps[P.si];return st?(st.kind||'num'):null}
-function slot(){const w=curKind()!=='num';return`<span class="slot ${P.input?'':'empty'} ${w?'w':''}">${P.input?esc(P.input):'?'}</span>`}
+/* Teilen mit Rest: P.input ist "5" (Ergebnis) oder "5|1" (Ergebnis|Rest) */
+function restParts(){const[q='',r]=P.input.split('|');return{q,r:r===undefined?null:r}}
+function restKey(k){const{q,r}=restParts();
+ if(k==='del'){P.input=P.input.slice(0,-1);return}
+ if(k==='ok'||k==='next'){if(r===null){if(q!=='')P.input+='|';return}if(k==='ok'&&r!=='')submit(`${+q} R ${+r}`);return}
+ if(r===null){if(q.length<2)P.input+=k}else if(r.length<2)P.input+=k}
+function slot(){const k0=curKind();if(k0==='rest'){const{q,r}=restParts(),onR=r!==null;
+  return`<span class="slot ${q?'':'empty'} ${onR?'idle':'act'}">${q||'?'}</span> <span class="rlbl">R</span> <span class="slot ${r?'':'empty'} ${onR?'act':'idle'}">${r||'?'}</span>`}
+ const w=k0!=='num';return`<span class="slot ${P.input?'':'empty'} ${w?'w':''}">${P.input?esc(P.input):'?'}</span>`}
 function fill(str,val){return str.includes('{?}')?str.replace('{?}',val):str}
 function matches(kind,val,ans,acc){if(kind==='num')return +val===ans;if(kind==='word'||kind==='tiles'){const v=String(val).trim();return v===ans||(acc||[]).includes(v)}return val===ans}
 function keyboard(){const up=P.caps;
@@ -195,7 +203,8 @@ function renderPractice(){
  else if(k==='choice'){const opts=P.mode==='main'?t.options:t.steps[P.si].options;ctrl=`<div class="opts">${opts.map(o=>`<button class="opt ${P.wrong.includes(o)?'wrong':''}" data-opt="${encodeURIComponent(o)}">${o}</button>`).join('')}</div>`}
  else if(k==='word')ctrl=keyboard();
  else if(k==='tiles')ctrl=tilesPad();
- else ctrl=`<div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join('')}<button data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="go" data-k="ok">Prüfen</button></div>`;
+ else{const onQ=k==='rest'&&restParts().r===null;
+  ctrl=`${k==='rest'?`<p class="small muted resthint">${onQ?'Erst das <b>Ergebnis</b> eintippen, dann weiter zum <b>Rest</b>.':'Jetzt den <b>Rest</b> eintippen. Kein Rest? Dann tippe <b>0</b>.'}</p>`:''}<div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join('')}<button data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="go" data-k="ok">${onQ?'Zum Rest →':'Prüfen'}</button></div>`}
  const helpers=P.flashing?'<div class="helpers"></div>':`<div class="helpers">${t.stepsOnly||P.mode==='main'?`<button class="linkbtn" data-act="speak">${ICON.speaker} Vorlesen</button>`:''}${t.flash&&!P.solved&&!P.flashing&&P.mode==='main'?'<button class="linkbtn" data-act="reflash">Nochmal zeigen</button>':''}${P.mode==='main'&&!P.solved&&t.steps&&t.steps.length?'<button class="linkbtn" data-act="help">Hilf mir Schritt für Schritt</button>':''}${s.learn.length?'<button class="linkbtn" data-act="relearn">Erklärung nochmal</button>':''}</div>`;
  app.innerHTML=`<div class="top"><button class="linkbtn" data-act="home">← Stall</button><h2>${s.title}</h2></div>
  <div class="dots" aria-label="Aufgabe ${P.i+1} von ${P.tasks.length}">${dots}</div>
@@ -267,6 +276,7 @@ app.addEventListener('click',e=>{
  if(b.dataset.subject){S.subject=b.dataset.subject;save();view='home';return render()}
  if(b.dataset.topic){S.topic=b.dataset.topic;S.tsel[S.subject]=b.dataset.topic;save();return render()}
  if(b.dataset.go){const id=b.dataset.go;if(view==='done'){startPractice(id)}else openStation(id);return}
+ if(b.dataset.k&&P&&!P.solved&&curKind()==='rest'){restKey(b.dataset.k);return render()}
  if(b.dataset.k){const k=b.dataset.k;if(k==='del')P.input=P.input.slice(0,-1);else if(k==='ok'){if(P.input!=='')submit(P.input);return}else if(P.input.length<3)P.input+=k;return render()}
  if(b.dataset.kb!==undefined){if(!P||P.solved||P.flashing)return;const k=b.dataset.kb;
   if(k==='del'){P.input=P.input.slice(0,-1);P.used.pop()}
@@ -304,6 +314,8 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Backspace'){e.preventDefault();P.input=P.input.slice(0,-1);render()}
   else if(e.key==='Enter'&&P.input){submit(P.input)}
   return}
+ if(k==='rest'){let m=null;if(/^[0-9]$/.test(e.key))m=e.key;else if(e.key==='Backspace')m='del';else if(e.key==='Enter')m='ok';else if(/^[rR ]$/.test(e.key)||e.key==='Tab')m='next';
+  if(m){e.preventDefault();restKey(m);if(view==='practice'&&!P.solved)render()}return}
  if(k!=='num')return;
  if(/^[0-9]$/.test(e.key)&&P.input.length<3){P.input+=e.key;render()}
  else if(e.key==='Backspace'){P.input=P.input.slice(0,-1);render()}
